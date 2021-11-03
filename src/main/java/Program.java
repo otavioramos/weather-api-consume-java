@@ -1,15 +1,10 @@
+import entities.OpenWeatherHttpClient;
+import entities.OpenWeatherRequest;
+import service.OpenWeatherService;
+
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Optional;
 
 public class Program {
-
-    static final String BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
 
     public static void main(String[] args) {
         final String token;
@@ -23,26 +18,18 @@ public class Program {
             return;
         }
 
-        HttpClient httpClient = setupHttpClient();
+        OpenWeatherRequest openWeatherRequest = new OpenWeatherRequest(cityName, token);
+        OpenWeatherHttpClient openWeatherHttpClient = new OpenWeatherHttpClient(20);
 
-        String uri = setupAndFormatUri(cityName, token);
-
-        HttpRequest request = setupHttpRequest(uri);
-
-        Optional<HttpResponse<String>> response = Optional.empty();
+        OpenWeatherService service = new OpenWeatherService();
+        service.setOpenWeatherHttpClient(openWeatherHttpClient);
+        service.setOpenWeatherRequest(openWeatherRequest);
 
         try {
-            response = Optional.ofNullable(sendRequest(httpClient, request));
+            System.out.printf("\nResponse: %s",service.getWeather());
         } catch (IOException | InterruptedException e) {
-            System.out.printf("The request to (%s) fails", BASE_URL);
-            System.out.printf("\nReason: %s", e.getMessage());
+            System.exit(0);
         }
-
-        response.ifPresent((resp) -> {
-            System.out.printf("Status code: %d",resp.statusCode());
-            System.out.printf("\nBody: %s",resp.body());
-        });
-
     }
 
     /**
@@ -57,34 +44,6 @@ public class Program {
             System.out.printf("Error: %s", e.getMessage());
             throw new IllegalArgumentException("The arguments passed are invalid");
         }
-    }
-
-    private static HttpResponse<String> sendRequest(HttpClient httpClient, HttpRequest request) throws IOException, InterruptedException {
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-    }
-
-    /**
-     * @param uri An uri on a string format
-     */
-    private static HttpRequest setupHttpRequest(String uri) {
-        return HttpRequest.newBuilder()
-                .GET()
-                .uri(URI.create(uri))
-                .build();
-    }
-
-    private static HttpClient setupHttpClient() {
-        return HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(20))
-                .build();
-    }
-
-    /**
-     * @param cityName The name of the city that the user wants to know the weather
-     * @param token A token created on https://home.openweathermap.org/api_keys for make a request
-     */
-    private static String setupAndFormatUri(String cityName, String token) {
-        return String.format("%s?q=%s&appid=%s&units=metric",BASE_URL,cityName, token);
     }
 }
 

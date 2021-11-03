@@ -1,23 +1,8 @@
-# CMake
-cmake-build-*/
-
-# File-based project format
-*.iws
-
-# IntelliJ
+# IntelliJ Output
 out/
-
-# JIRA plugin
-atlassian-ide-plugin.xml
-
-# Crashlytics plugin (for Android Studio and IntelliJ)
-com_crashlytics_export_strings.xml
-crashlytics.properties
-crashlytics-build.properties
-fabric.properties
 
 # IntelliJ
 .idea/
 
-# Output
+# Maven Output
 target/
